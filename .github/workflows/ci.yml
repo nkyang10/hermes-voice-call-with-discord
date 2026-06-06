@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install setuptools --upgrade && pip install pytest discord.py discord-ext-voice-recv webrtcvad PyNaCl
+      - run: pip install setuptools==67.8.0 && pip install pytest discord.py discord-ext-voice-recv webrtcvad PyNaCl
       - run: python -m pytest tests/ -v
 
   import-check:
@@ -30,5 +30,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install setuptools --upgrade && pip install discord.py discord-ext-voice-recv webrtcvad PyNaCl
+      - run: pip install setuptools==67.8.0 && pip install discord.py discord-ext-voice-recv webrtcvad PyNaCl
       - run: python -c "import sys; sys.path.insert(0, '.'); import discord_voice_bot_v4; print('Import OK')"
