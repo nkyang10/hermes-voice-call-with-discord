@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Voice data (created at runtime)
+voice_queue/
+voice_queue_tmp/
+voice_segments/
+voice_transcripts/
+voice_forward/
+
+# Runtime
+*.sock
+*.log
+/tmp/
