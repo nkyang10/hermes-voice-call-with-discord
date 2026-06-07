@@ -148,5 +148,6 @@ def test_module_imports():
     assert hasattr(mod, "is_natural_speech")
     assert hasattr(mod, "_execute_voice_command")
     assert hasattr(mod, "COMFYUI_URL")
-    assert hasattr(mod, "MIN_UTTERANCE_DURATION_MS")
-    assert hasattr(mod, "MIN_UTTERANCE_RMS")
+    assert hasattr(mod, "VADUtteranceSink")
+    # MIN_UTTERANCE_DURATION_MS and MIN_UTTERANCE_RMS are now
+    # hardcoded in VADUtteranceSink.__init__, not module-level constants
