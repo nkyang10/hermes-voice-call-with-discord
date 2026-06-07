@@ -16,6 +16,8 @@ import io
 import json
 import os
 import re
+
+from dotenv import load_dotenv
 import struct
 import subprocess
 import sys
@@ -147,6 +149,10 @@ _PacketRouter._do_run = _patched_do_run
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", os.path.expanduser("~/.hermes")))
 ENV_PATH = HERMES_HOME / ".env"
 
+# ── Load scripts/.env for runtime config (COMFYUI_URL, etc.) ──
+_scripts_dotenv = Path(__file__).parent / ".env"
+load_dotenv(_scripts_dotenv)
+
 def log(*a, **kw):
     print(f"[{time.strftime('%H:%M:%S')}]", *a, **kw, flush=True)
 
@@ -165,14 +171,8 @@ TMP_DIR = HERMES_HOME / "voice_queue_tmp"
 SEGMENT_DIR = HERMES_HOME / "voice_segments"
 TRANSCRIPT_DIR = HERMES_HOME / "voice_transcripts"
 
-# ── Config (overridable via env) ──
-SILENCE_TIMEOUT_MS = int(os.environ.get("SILENCE_TIMEOUT_MS", 800))
-PADDING_DURATION_MS = int(os.environ.get("PADDING_DURATION_MS", 300))
-VAD_AGGRESSIVENESS = int(os.environ.get("VAD_AGGRESSIVENESS", 2))
-COMFYUI_URL = os.environ.get("COMFYUI_URL", "")  # REQUIRED: set to your ComfyUI server URL
-MIN_UTTERANCE_DURATION_MS = int(os.environ.get("MIN_UTTERANCE_DURATION_MS", 1200))
-# ── Volume gate: skip quiet utterances from speakerphone pickup
-MIN_UTTERANCE_RMS = int(os.environ.get("MIN_UTTERANCE_RMS", 400))  # 16-bit audio RMS threshold
+# ── Config (env only) ──
+COMFYUI_URL = os.environ["COMFYUI_URL"]
 
 # ── Telegram config (from .env) ──
 # Note: bot cannot send directly (TELEGRAM_HOME_CHANNEL == bot's own ID).
@@ -310,11 +310,11 @@ class VADUtteranceSink(voice_recv.AudioSink):
     4. Queues for ASR processing
     """
 
-    def __init__(self, *, vad_aggressiveness=VAD_AGGRESSIVENESS,
-                 silence_timeout_ms=SILENCE_TIMEOUT_MS,
-                 padding_duration_ms=PADDING_DURATION_MS,
-                 min_utterance_ms=MIN_UTTERANCE_DURATION_MS,
-                 min_utterance_rms=MIN_UTTERANCE_RMS):
+    def __init__(self, *, vad_aggressiveness=2,
+                 silence_timeout_ms=800,
+                 padding_duration_ms=300,
+                 min_utterance_ms=1200,
+                 min_utterance_rms=10):
         super().__init__()
         self.vad = webrtcvad.Vad(vad_aggressiveness)
         self.silence_timeout_ms = silence_timeout_ms
@@ -344,20 +344,24 @@ class VADUtteranceSink(voice_recv.AudioSink):
     def on_voice_member_speaking_start(self, member: discord.Member):
         uid = member.id
         log(f"🎤 Speaking START: {member.display_name} ({uid})")
+        # If user has an in-progress utterance from a previous burst, flush it now.
+        # This lets Discord's multiple VAD bursts accumulate into one full sentence.
+        if uid in self.user_speaking and self.user_speaking[uid]:
+            self._flush_utterance_if_any(uid)
         # Initialize buffer for this user
         if uid not in self.user_buffers:
             self.user_buffers[uid] = collections.deque(maxlen=self.num_padding_frames)
         self.user_voiced_frames[uid] = []
+        self.user_speaking[uid] = False
+        self.user_silence_count[uid] = 0
 
     @voice_recv.AudioSink.listener()
     def on_voice_member_speaking_stop(self, member: discord.Member):
         uid = member.id
         log(f"🎤 Speaking STOP: {member.display_name} ({uid}) — was_speaking={self.user_speaking.get(uid, False)}")
-        self._flush_utterance_if_any(uid)
-        self.user_buffers.pop(uid, None)
-        self.user_voiced_frames.pop(uid, None)
-        self.user_speaking.pop(uid, None)
-        self.user_silence_count.pop(uid, None)
+        # Don't flush on STOP — Discord sends STOP aggressively between speech
+        # bursts. The next Speaking START will flush the accumulated utterance.
+        pass
 
     def write(self, user, data: voice_recv.VoiceData):
         """Called for each received audio packet (from a thread, not async)."""
@@ -829,6 +833,7 @@ def asr_via_comfyui(wav_path: str, uid: int) -> str:
         },
         "2": {
             "inputs": {
+                # STT priority: Cantonese + English (auto-detect between these)
                 "language": "auto",
                 "context": "",
                 "return_timestamps": False,
@@ -1227,8 +1232,6 @@ async def cmd_debug(ctx):
             lines.append(f"   Speak: {perms.speak}")
     else:
         lines.append("❌ Not connected")
-    lines.append(f"   Silence timeout: {SILENCE_TIMEOUT_MS}ms")
-    lines.append(f"   VAD aggressiveness: {VAD_AGGRESSIVENESS}")
     await ctx.send("\n".join(lines))
 
 @bot.command(name="set_text_channel")
