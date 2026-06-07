@@ -41,7 +41,7 @@ You (hear) ←── Discord Voice Channel ←── edge-tts ←── Text Rep
 - Python 3.10+
 - A **Discord Bot Token** with voice intents enabled
 - **ComfyUI** server running with [Qwen3-ASR custom nodes](https://github.com/flybirdxx/ComfyUI-Qwen3-TTS)
-- **DeepSeek API key** (or any OpenAI-compatible LLM provider)
+- **Hermes Agent** — installed at `~/.hermes/hermes-agent/` with your LLM provider configured
 - [discord.py](https://github.com/Rapptz/discord.py) + [discord-ext-voice-recv](https://github.com/imayhaveborkedit/discord-ext-voice-recv)
 - [edge-tts](https://github.com/rany2/edge-tts) — free TTS via Microsoft Edge
 - [webrtcvad](https://github.com/wiseman/py-webrtcvad) — voice activity detection
@@ -54,7 +54,7 @@ pip install -r requirements.txt
 
 # 2. Set up environment
 cp .env.example .env
-# Fill in DISCORD_BOT_TOKEN, COMFYUI_URL, DEEPSEEK_API_KEY
+# Fill in DISCORD_BOT_TOKEN, COMFYUI_URL
 
 # 3. Run the bot
 python3 discord_voice_bot_v4.py --guild YOUR_GUILD_ID --channel "Voice Channel Name"
@@ -84,7 +84,7 @@ python3 discord_voice_bot_v4.py --guild YOUR_GUILD_ID --channel "Voice Channel N
 |----------|---------|-------------|
 | `DISCORD_BOT_TOKEN` | — | Discord bot token **(required)** |
 | `COMFYUI_URL` | — | ComfyUI server URL for Qwen3-ASR **(required)** |
-| `DEEPSEEK_API_KEY` | — | DeepSeek API key for Hermes agent |
+| `HERMES_HOME` | `~/.hermes` | Hermes config directory (LLM key, provider) |
 | `SILENCE_TIMEOUT_MS` | `800` | Silence duration to end utterance (ms) |
 | `PADDING_DURATION_MS` | `300` | Audio padding before utterance start (ms) |
 | `VAD_AGGRESSIVENESS` | `2` | WebRTC VAD mode (0-3, higher = more aggressive) |

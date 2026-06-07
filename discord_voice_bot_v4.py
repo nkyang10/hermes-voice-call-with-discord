@@ -638,29 +638,7 @@ async def _post_transcription(bot_ref, uid: int, text: str, wav_path: str):
     if text.strip():
         asyncio.create_task(inline_respond(bot_ref, text.strip(), member_name))
 
-# ── Inline Auto-Response: DeepSeek (same model) ──────────────
-
-CONV_FILE = HERMES_HOME / "voice_conv.json"
-
-def read_conv():
-    if CONV_FILE.exists():
-        try:
-            return json.loads(CONV_FILE.read_text())
-        except Exception:
-            pass
-    return []
-
-def save_conv(msgs):
-    if len(msgs) > 40:
-        msgs = [msgs[0]] + msgs[-39:]
-    CONV_FILE.write_text(json.dumps(msgs, ensure_ascii=False))
-
-def get_api_key():
-    if ENV_PATH.exists():
-        for line in ENV_PATH.read_text().splitlines():
-            if line.startswith("DEEPSEEK_API_KEY="):
-                return line.split("=", 1)[1].strip()
-    return ""
+# ── Inline Auto-Response: Hermes AI Agent ───────────────────
 
 def is_natural_speech(text: str) -> bool:
     """Check if ASR text sounds like natural conversational speech."""

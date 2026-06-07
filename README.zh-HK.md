@@ -44,7 +44,7 @@ pip install -r requirements.txt
 
 # 2. 設定環境變數
 cp .env.example .env
-# 填入 DISCORD_BOT_TOKEN, COMFYUI_URL, DEEPSEEK_API_KEY
+# 填入 DISCORD_BOT_TOKEN, COMFYUI_URL
 
 # 3. 執行
 python3 discord_voice_bot_v4.py --guild 你的伺服器ID --channel "語音頻道名"
@@ -74,7 +74,7 @@ python3 discord_voice_bot_v4.py --guild 你的伺服器ID --channel "語音頻�
 |------|--------|------|
 | `DISCORD_BOT_TOKEN` | — | Discord Bot Token **（必填）** |
 | `COMFYUI_URL` | — | ComfyUI 伺服器網址 **（必填）** |
-| `DEEPSEEK_API_KEY` | — | DeepSeek API Key |
+| `HERMES_HOME` | `~/.hermes` | Hermes config 目錄（LLM key 放喺度） |
 | `SILENCE_TIMEOUT_MS` | `800` | 靜音幾耐當一句完結（毫秒） |
 | `PADDING_DURATION_MS` | `300` | 講嘢開始前保留嘅音訊（毫秒） |
 | `VAD_AGGRESSIVENESS` | `2` | VAD 敏感度（0-3） |
