@@ -31,4 +31,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install setuptools==67.8.0 && pip install python-dotenv discord.py discord-ext-voice-recv webrtcvad PyNaCl
-      - run: python -c "import sys; sys.path.insert(0, '.'); import discord_voice_bot_v4; print('Import OK')"
+      - run: COMFYUI_URL=http://test:8000 HERMES_HOME=/tmp/hermes_test python -c "import sys; sys.path.insert(0, '.'); import discord_voice_bot_v4; print('Import OK')"
